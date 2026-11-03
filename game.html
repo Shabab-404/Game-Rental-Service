@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GRS BD · Game Rental Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c14;
+  --panel:#111827;
+  --panel2:#1a2333;
+  --panel3:#232f46;
+  --text:#f1f5f9;
+  --mute:#94a3b8;
+  --blue:#3b82f6;
+  --blue2:#60a5fa;
+  --blue-glow:rgba(59, 130, 246, 0.4);
+  --line:#334155;
+  --accent:#38bdf8;
+  --drop-zone:#10b981;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);font-family:"Outfit",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden;
+  background-image:radial-gradient(1200px 500px at 50% 0,#0043ce22,transparent),linear-gradient(var(--bg),var(--panel2) 60%,var(--bg));
+  padding-bottom: 0;
+}
+body.edit-on {
+  padding-bottom: 80px;
+}
+a{color:inherit;text-decoration:none}
+#embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+main,footer{position:relative;z-index:1}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.blue-text{background:linear-gradient(95deg,#60a5fa,#2563eb 50%,#93c5fd 85%,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:flow 6s linear infinite}
+@keyframes flow{to{background-position:200% 0}}
+
+/* Quick Top Admin Notice Bar */
+.uploader-banner {
+  background: linear-gradient(90deg, #065f46, #0f172a 75%);
+  border-bottom: 1px solid #10b98166;
+  padding: 10px 16px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(8px);
+}
+body.edit-on .uploader-banner {
+  display: flex !important;
+}
+.uploader-banner .badge-pill {
+  background: #10b981;
+  color: #052e16;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.banner-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.banner-btn:hover {
+  background: var(--blue);
+  border-color: var(--blue2);
+}
+.banner-btn.green {
+  background: #10b981;
+  border-color: #059669;
+  color: #052e16;
+  font-weight: 800;
+}
+.banner-btn.green:hover {
+  background: #34d399;
+}
+.banner-btn.danger {
+  background: rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.45);
+  color: #fca5a5;
+}
+.banner-btn.danger:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* hero */
+.hero{min-height:86vh;display:grid;place-items:center;perspective:1100px;position:relative;padding:50px 0 30px}
+.stage{position:relative;width:100%;max-width:980px;height:520px;transform-style:preserve-3d;transform:rotateX(var(--hx,0deg)) rotateY(var(--hy,0deg));transition:transform .2s}
+.layer{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+.glow{transform:translateZ(-160px) scale(1.5);background:radial-gradient(closest-side at 50% 62%,#0052ff33,#0052ff00 70%)}
+.vol{transform:translateZ(-60px);align-items:end}
+.vol svg{width:100%;height:auto;max-height:100%;filter:drop-shadow(0 0 28px #0043ce55)}
+.lavaflow{animation:pulse 3.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+.copy{transform:translateZ(50px);align-content:center;gap:14px;padding:0 10px}
+.badge{justify-self:center;font-size:12px;letter-spacing:.28em;text-transform:uppercase;border:1px solid #3b82f655;background:#3b82f61a;padding:7px 16px;border-radius:99px;color:var(--blue2);pointer-events:auto;user-select:none}
+h1{font-size:clamp(40px,8vw,96px);line-height:.95;margin:0;font-weight:900;letter-spacing:-.02em;text-shadow:0 10px 40px #0043ce44}
+.sub{font-size:clamp(15px,2vw,19px);color:var(--mute);max-width:620px;margin:0 auto;font-weight:300}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;pointer-events:auto;margin-top:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:14px;font-weight:700;text-decoration:none;border:1px solid #3b82f666;transition:transform .2s,box-shadow .2s;cursor:pointer;font-family:inherit;font-size:15px;color:var(--text);background:#3b82f614}
+.btn.hot{background:linear-gradient(120deg,#1d4ed8,#3b82f6);color:#ffffff;border-color:transparent;box-shadow:0 10px 30px #0043ce66}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 35px #0043ce77}
+.stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.stat{padding:8px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-size:13px;color:var(--mute)}
+.stat b{color:var(--blue2)}
+
+/* Drop Zone Instructions Callout (Admin Only) */
+.drop-instructions {
+  background: linear-gradient(140deg, #111e38, #0e1726);
+  border: 1px dashed #3b82f688;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 20px 0 35px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+body.edit-on .drop-instructions {
+  display: flex !important;
+}
+.drop-instructions-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.drop-icon-pulse {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #3b82f62b;
+  border: 1px solid #3b82f666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  animation: pulse-ring 2s infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+  100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+}
+
+/* sections */
+section{padding:48px 0}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+h2{font-size:clamp(28px,4.5vw,44px);margin:0 0 6px;font-weight:900;letter-spacing:-.01em}
+.lead{color:var(--mute);margin:0;font-weight:300;font-size:15px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:24px;
+  align-items:stretch;
+}
+
+/* Cards & Layout */
+.card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  border-radius:20px;
+  background:linear-gradient(160deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);
+  padding:14px;
+  cursor:pointer;
+  transition:transform .3s ease, box-shadow .3s ease, border-color .2s ease;
+  box-shadow:0 16px 36px rgba(0,0,0,0.3);
+  outline:none;
+}
+.card:hover{
+  border-color:#3b82f688;
+  box-shadow:0 24px 50px rgba(0,0,0,0.4),0 0 30px #3b82f622;
+  transform:translateY(-3px);
+}
+.card:focus-visible{border-color:var(--blue2)}
+
+/* Card Drag-Over State */
+.card.drag-target {
+  border: 2px dashed #10b981 !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.45) !important;
+}
+.card.drag-target .cover-box::after {
+  content: "⬇ Drop Cover Here";
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 185, 129, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  z-index: 10;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* Aspect-Ratio 3:4 Lock */
+.cover-box{
+  width:100%;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  border-radius:14px;
+  box-shadow:0 12px 26px rgba(0,0,0,0.4);
+  background:#0c121e;
+  position:relative;
+  flex-shrink:0;
+}
+.cover{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  transition:transform 0.4s ease;
+}
+.card:hover .cover{transform:scale(1.03)}
+
+/* Admin Card Controls Overlay */
+.admin-card-bar {
+  position: absolute;
+  inset: auto 6px 6px 6px;
+  background: rgba(10, 15, 28, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 10px;
+  padding: 5px;
+  display: none;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  z-index: 8;
+}
+body.edit-on .admin-card-bar {
+  display: grid;
+}
+.ac-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-align: center;
+}
+.ac-btn:hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue2);
+}
+.ac-btn.warn:hover {
+  background: #f59e0b;
+  border-color: #fbbf24;
+  color: #000;
+}
+.ac-btn.del:hover {
+  background: #ef4444;
+  border-color: #f87171;
+  color: #fff;
+}
+
+.edit-only {
+  display: none !important;
+}
+body.edit-on .edit-only {
+  display: inline-flex !important;
+}
+
+.tag{
+  position:absolute;
+  top:22px;
+  right:6px;
+  z-index:4;
+  background:linear-gradient(120deg,#1e40af,#3b82f6);
+  color:#ffffff;
+  font-weight:900;
+  padding:6px 12px;
+  border-radius:8px 0 0 8px;
+  box-shadow:0 8px 20px rgba(0,67,206,0.4);
+  font-size:13px;
+  line-height:1.1;
+  text-align:right;
+}
+.tag small{display:block;font-weight:500;font-size:9px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+
+.meta{
+  display:flex;
+  flex-direction:column;
+  flex-grow:1;
+  padding-top:14px;
+}
+.meta h3{
+  margin:0 0 8px;
+  font-size:17px;
+  font-weight:700;
+  line-height:1.25;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  min-height:42px;
+  color:var(--text);
+}
+.cc .meta h3 {
+  font-size: 15px;
+  min-height: 38px;
+  margin-bottom: 6px;
+}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute);background:var(--panel)}
+.chip.hot{color:var(--blue2);border-color:#3b82f666}
+
+.more{margin-top:4px;font-size:12px;color:var(--blue2);font-weight:600;text-align:center;display:block}
+.quick-days{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-top:auto;
+  margin-bottom:10px;
+}
+.qbtn{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:6px;
+  font-size:11px;
+  font-weight:700;
+  padding:6px 0;
+  text-align:center;
+  color:var(--blue2);
+  cursor:pointer;
+  transition:all .2s;
+  text-decoration:none;
+}
+.qbtn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.card.out .cover-box,.card.out .tile{filter:grayscale(1) brightness(.55)}
+.card.out .tag{background:#444;color:#ddd;box-shadow:none}
+.ribbon{position:absolute;top:18px;left:-8px;z-index:5;background:#ef4444;border:1px solid #fca5a5;color:#fff;font-weight:800;font-size:11px;padding:5px 10px;border-radius:4px 8px 8px 4px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,0.5)}
+
+/* collection tools */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 24px}
+.search{flex:1;min-width:200px;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit}
+.search:focus{outline:none;border-color:var(--blue)}
+.fbtn{padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--mute);font:inherit;cursor:pointer;transition:all .2s}
+.fbtn.on{color:#ffffff;background:linear-gradient(120deg,#1d4ed8,#3b82f6);border-color:transparent;font-weight:700}
+.grid.cg{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.cc{padding:12px 12px 14px;cursor:pointer}
+.tile{width:100%;height:100%;border-radius:12px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;box-shadow:0 12px 26px rgba(0,0,0,0.2)}
+.tile::before{content:"";position:absolute;left:-20%;right:-20%;bottom:0;height:40%;background:linear-gradient(90deg,transparent,#0043ce55,transparent);transform:skewY(-8deg)}
+.tile .ini{position:absolute;top:6px;left:10px;font-size:38px;font-weight:900;opacity:.15;letter-spacing:-.03em}
+.tile .ttl{position:relative;font-weight:900;font-size:13px;line-height:1.15;text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
+.cc .meta{padding:12px 2px 0}
+.dlc{font-size:11px;color:var(--mute);margin:0 0 10px;line-height:1.4}
+
+/* subs */
+.subs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px}
+.sub-card{cursor:default;padding:24px 22px;background:linear-gradient(160deg,var(--panel),var(--panel2))}
+.sub-card .plat{font-size:12px;letter-spacing:.2em;color:var(--mute)}
+.sub-card h3{margin:4px 0 0;font-size:24px}
+.sub-card .price{font-size:42px;font-weight:900;margin:10px 0 2px}
+.sub-card .price small{font-size:14px;font-weight:300;color:var(--mute)}
+.sub-card ul{list-style:none;padding:0;margin:14px 0 0;font-size:13px;color:var(--mute);display:grid;gap:8px}
+.sub-card li::before{content:"◆";color:var(--blue);margin-right:8px;font-size:10px}
+.sub-card .hl{color:var(--text);font-weight:600}
+.note{margin-top:26px;padding:18px 22px;border-radius:16px;border:1px dashed #3b82f666;background:#3b82f60f;color:var(--mute);font-size:14px;line-height:1.6}
+footer{padding:50px 0 90px;text-align:center;color:var(--mute);border-top:1px solid var(--line);background:linear-gradient(transparent,var(--panel2))}
+footer h2{font-size:clamp(26px,4vw,38px)}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);padding:20px}
+#modal.open{display:grid}
+.sheet{width:100%;max-width:620px;max-height:90vh;overflow-y:auto;background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid #3b82f666;border-radius:20px;padding:24px;box-shadow:0 0 80px rgba(0,67,206,0.3);animation:pop .3s cubic-bezier(.2,.9,.2,1.2)}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(20px)}}
+.sh-top{display:flex;gap:16px;align-items:flex-start}
+.sh-top .modal-img-wrap {position:relative;width:96px;aspect-ratio:3/4;flex-shrink:0;}
+.sh-top img{width:100%;height:100%;object-fit:cover;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.4)}
+.sh-top h3{margin:0 0 6px;font-size:24px}
+.x{margin-left:auto;background:none;border:1px solid var(--line);color:var(--text);border-radius:10px;width:36px;height:36px;font-size:16px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.x:hover{background:#ffffff15}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.tbl{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.tbl h4{margin:0;padding:10px 14px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue2);background:#3b82f618}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-top:1px solid var(--line);font-size:14px}
+.row b{color:var(--text)}
+.book-row-btn{background:var(--blue);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none}
+.book-row-btn:hover{background:#2563eb}
+.small{font-size:13px;color:var(--mute);line-height:1.6;margin:10px 0 16px}
+
+/* Game Editor Modal (Add / Edit Game) */
+#gameEditorModal, #pinModal {
+  position:fixed;inset:0;z-index:85;display:none;place-items:center;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);padding:20px;
+}
+#gameEditorModal.open, #pinModal.open {display:grid}
+.editor-sheet {
+  width:100%;max-width:640px;max-height:92vh;overflow-y:auto;background:var(--panel);border:1px solid #3b82f688;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.65);
+}
+.form-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;
+}
+.form-group {
+  display:flex;flex-direction:column;gap:6px;
+}
+.form-group.full {grid-column: 1 / -1;}
+.form-group label {font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.form-input, .form-select {
+  padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:14px;
+}
+.form-input:focus, .form-select:focus {outline:none;border-color:var(--blue)}
+.cover-upload-preview {
+  display:flex;align-items:center;gap:16px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--panel2);
+}
+.cover-upload-preview img {
+  width:72px;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:#0c121e;
+}
+
+/* Image Manager Modal */
+#imgModal {position:fixed;inset:0;z-index:70;display:none;place-items:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);padding:20px}
+#imgModal.open {display:grid}
+.img-sheet {width:100%;max-width:780px;max-height:88vh;overflow-y:auto;background:var(--panel);border:1px solid #3b82f688;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.img-grid-review {display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:14px;margin-top:16px;max-height:420px;overflow-y:auto;padding-right:6px}
+.img-thumb-item {background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;position:relative;text-align:center}
+.img-thumb-item img {width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px}
+.img-thumb-item .thumb-title {font-size:11px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img-thumb-item .upload-sm-btn {margin-top:6px;width:100%;font-size:10px;padding:4px 0;background:#3b82f622;border:1px solid #3b82f655;color:var(--blue2);border-radius:4px;cursor:pointer}
+.img-thumb-item .upload-sm-btn:hover {background:var(--blue);color:#fff}
+.rm-btn{margin-top:4px;width:100%;font-size:10px;padding:4px 0;background:#ef444422;border:1px solid #ef444455;color:#fca5a5;border-radius:4px;cursor:pointer}
+.rm-btn:hover{background:#ef4444;color:#fff}
+
+/* Code Export Modal */
+#exportModal {position:fixed;inset:0;z-index:80;display:none;place-items:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);padding:20px}
+#exportModal.open {display:grid}
+.export-sheet {width:100%;max-width:820px;max-height:88vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid #3b82f688;border-radius:20px;padding:24px}
+.code-box {background:#0a0e17;border:1px solid var(--line);border-radius:10px;padding:14px;color:#93c5fd;font-family:monospace;font-size:12px;overflow:auto;flex:1;max-height:360px;white-space:pre-wrap;margin:16px 0}
+
+/* Persistent Bottom Sticky Action Toolbar (Admin Only) */
+.save-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #10b98166;
+  padding: 10px 20px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  z-index: 45;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+}
+body.edit-on .save-toolbar {
+  display: flex !important;
+}
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.save-status strong {color: #fff;}
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+.toolbar-btns {display: flex; flex-wrap: wrap; gap: 10px;}
+.tbtn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .2s;
+}
+.tbtn:hover {background: #334155; border-color: #64748b;}
+.tbtn.primary {
+  background: linear-gradient(120deg, #1d4ed8, #3b82f6);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+.tbtn.primary:hover {filter: brightness(1.1); transform: translateY(-1px);}
+.tbtn.success {
+  background: linear-gradient(120deg, #059669, #10b981);
+  border-color: transparent;
+  color: #052e16;
+  font-weight: 800;
+}
+
+/* Toast Message */
+#toast {
+  position: fixed;
+  bottom: 74px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  opacity: 0;
+  pointer-events: none;
+  background: #10b981;
+  color: #052e16;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: all 0.25s ease;
+  z-index: 99;
+}
+#toast.show {transform: translateX(-50%) translateY(0); opacity: 1;}
+
+/* Hidden File Inputs */
+#filePicker, #editorFilePicker { display: none; }
+</style>
+</head>
+<body>
+
+<canvas id="embers"></canvas>
+
+<!-- Top Admin Bar (Strictly hidden unless unlocked with Admin PIN) -->
+<div class="uploader-banner">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="badge-pill">Admin Unlocked</span>
+    <span>Drag &amp; drop covers onto any card, edit titles/prices, add new games, or export for GitHub Pages!</span>
+  </div>
+  <div class="banner-actions">
+    <button class="banner-btn green" onclick="openGameEditor(null, 'G')">＋ Add to Latest Drops</button>
+    <button class="banner-btn green" onclick="openGameEditor(null, 'C')">＋ Add to Collection</button>
+    <button class="banner-btn" onclick="openImageManager()">🖼️ All Covers Drawer</button>
+    <button class="banner-btn danger" onclick="lockAdmin()">🔒 Lock Admin</button>
+  </div>
+</div>
+
+<main>
+<header class="hero" id="top">
+  <div class="stage" id="stage">
+    <div class="layer glow"></div>
+    <div class="layer vol">
+      <svg viewBox="0 0 900 360" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94a3b8"></stop><stop offset="1" stop-color="#334155"></stop></linearGradient>
+          <linearGradient id="lv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"></stop><stop offset=".5" stop-color="#2563eb"></stop><stop offset="1" stop-color="#1d4ed8"></stop></linearGradient>
+        </defs>
+        <path d="M0 360V300L130 250 230 280 380 120 430 60 480 60 530 120 690 250 800 220 900 290V360Z" fill="url(#rock)"></path>
+        <path d="M0 360V320L160 290 300 310 440 250 600 305 760 280 900 320V360Z" fill="#1e293b"></path>
+        <g class="lavaflow" fill="url(#lv)">
+          <path d="M430 60h50l-8 20 14 30-18 20 20 40-24 36 18 44H400l22-44-20-34 22-38-16-34 14-24Z" opacity=".95"></path>
+          <path d="M392 140l-34 70 20 20-30 60h40l24-70-20-30Z" opacity=".75"></path>
+          <path d="M520 150l42 60-14 26 40 70h-42l-34-64 14-30Z" opacity=".75"></path>
+        </g>
+        <ellipse cx="455" cy="62" rx="36" ry="9" fill="#93c5fd"></ellipse>
+      </svg>
+    </div>
+    <div class="layer copy">
+      <!-- Secret Trigger #1: Triple-click this badge to open Admin PIN prompt -->
+      <span class="badge" id="secretBadge">PS4 · PS5 · Bangladesh</span>
+      <h1>GAME RENTAL<br><span class="blue-text">SERVICE · GRS</span></h1>
+      <p class="sub">Play the newest blockbusters without paying full price. Pick a slot, pick your days, start downloading.</p>
+      <div class="cta">
+        <a class="btn hot" href="#games">Browse latest games</a>
+        <a class="btn" href="https://www.facebook.com/GameRentalService.grs.bd" target="_blank" rel="noopener">Inbox to book a slot</a>
+      </div>
+      <div class="stats">
+        <span class="stat"><b id="heroLatestCount">10</b> featured titles</span>
+        <span class="stat">Rentals from <b>300 BDT</b> / week</span>
+        <span class="stat"><b>1–2</b> extra days to download</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="games"><div class="wrap">
+  <div class="sec-head">
+    <div>
+      <h2>Latest <span class="blue-text">drops</span></h2>
+      <p class="lead">Click any title to view full slot pricing or tap a day button to book directly in Messenger.</p>
+    </div>
+    <button class="tbtn success edit-only" onclick="openGameEditor(null, 'G')">＋ Add Featured Game</button>
+  </div>
+  
+  <div class="drop-instructions">
+    <div class="drop-instructions-text">
+      <div class="drop-icon-pulse">🛠️</div>
+      <div>
+        <strong style="color:#fff;display:block;">Admin Mode Active — Full Control</strong>
+        <span style="font-size:13px;color:var(--mute)">Drop .jpg/.png/.webp covers onto any card, use card buttons to Edit/Move/Rent-Out/Delete, then click "Download index.html" to publish to GitHub Pages.</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="tbtn" onclick="openImageManager()">🖼️ All Covers</button>
+      <button class="tbtn primary" onclick="downloadHtmlFile()">⬇️ Download index.html</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="collection"><div class="wrap">
+  <div class="sec-head">
+    <div>
+      <h2>Full <span class="blue-text">collection</span></h2>
+      <p class="lead">More PS4 &amp; PS5 titles. Pick your rental days (7d / 14d / 21d / 28d) or click any game to book. <span id="cnt" style="color:var(--blue2);font-weight:600;"></span></p>
+    </div>
+    <button class="tbtn success edit-only" onclick="openGameEditor(null, 'C')">＋ Add Collection Game</button>
+  </div>
+  <div class="tools">
+    <input class="search" id="q" type="search" placeholder="Search games…" aria-label="Search games">
+    <button class="fbtn on" data-f="">All</button>
+    <button class="fbtn" data-f="PS5">PS5</button>
+    <button class="fbtn" data-f="PS4 / PS5">PS4 / PS5</button>
+  </div>
+  <div class="grid cg" id="cgrid"></div>
+</div></section>
+
+<section id="subs"><div class="wrap">
+  <h2>Yearly <span class="blue-text">subscriptions</span></h2>
+  <p class="lead">One fee for the year, unlimited exchanges, no return deadline.</p>
+  <div class="subs" id="subgrid"></div>
+  <div class="note">📌 We provide 1 or 2 extra days for download (depends on the game). The additional 200 BDT charge on listed new releases applies only to the first month and is not added from the second month onward. Slots are limited, so inbox early.</div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <h2>Ready to <span class="blue-text">ignite</span> your next game?</h2>
+  <p>Message the page, tell us the game and the slot, and we’ll get you set up.</p>
+  <a class="btn hot" href="https://www.facebook.com/GameRentalService.grs.bd" target="_blank" rel="noopener">Inbox now to book your slot</a>
+  <!-- Secret Trigger #2: Triple-click this footer note to open Admin PIN prompt -->
+  <p class="small" id="secretFooter" style="margin-top:28px;user-select:none">Fan-made showcase based on the Game Rental Service GRS BD Facebook post. Game artwork belongs to its respective publishers.</p>
+</div></footer>
+
+<!-- Game Details Modal -->
+<div id="modal" role="dialog" aria-modal="true" aria-label="Game pricing"><div class="sheet" id="sheet"></div></div>
+
+<!-- Secret Admin PIN Modal -->
+<div id="pinModal" role="dialog" aria-modal="true" aria-label="Admin Unlock">
+  <div class="editor-sheet" style="max-width:380px;text-align:center;">
+    <h3 style="margin:0 0 8px;font-size:20px;">🔐 Admin Access</h3>
+    <p class="small" style="margin:0 0 16px;">Enter your secret Admin PIN to unlock game &amp; cover editing controls.</p>
+    <form onsubmit="verifyPin(event)">
+      <input type="password" id="pinInput" class="form-input" placeholder="Enter PIN…" style="width:100%;text-align:center;font-size:18px;letter-spacing:0.25em;margin-bottom:14px;" autocomplete="off">
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button type="button" class="tbtn" onclick="closePinModal()">Cancel</button>
+        <button type="submit" class="tbtn primary">Unlock Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add / Edit Game Modal -->
+<div id="gameEditorModal" role="dialog" aria-modal="true" aria-label="Add or Edit Game">
+  <div class="editor-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 id="editorTitle" style="margin:0;font-size:20px;">➕ Add / Edit Game</h3>
+      <button class="x" onclick="closeGameEditor()">✕</button>
+    </div>
+    <form id="gameForm" onsubmit="saveGameForm(event)">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Cover Image (Drag &amp; drop or click to upload)</label>
+          <div class="cover-upload-preview" id="editorDropArea">
+            <img id="editorCoverPreview" src="" alt="Preview">
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Game Box Art (3:4 Aspect Ratio)</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="tbtn" onclick="document.getElementById('editorFilePicker').click()">📷 Choose Image</button>
+                <button type="button" class="tbtn" onclick="clearEditorCover()">Clear Cover</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label for="f_name">Game Title *</label>
+          <input type="text" id="f_name" class="form-input" required placeholder="e.g., Ghost of Yotei">
+        </div>
+
+        <div class="form-group">
+          <label for="f_section">Section</label>
+          <select id="f_section" class="form-select">
+            <option value="G">Latest Drops (Featured)</option>
+            <option value="C">Full Collection</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f_plat">Platform</label>
+          <select id="f_plat" class="form-select">
+            <option value="PS5">PS5</option>
+            <option value="PS4 / PS5">PS4 / PS5</option>
+            <option value="PS4">PS4</option>
+            <option value="PS5 · US region">PS5 · US region</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f_date">Release / Subtitle Tag</label>
+          <input type="text" id="f_date" class="form-input" placeholder="e.g., Now available or Release 29-10-2026">
+        </div>
+
+        <div class="form-group">
+          <label for="f_hot">Highlight Badge (Optional)</label>
+          <input type="text" id="f_hot" class="form-input" placeholder="e.g., New release, Pre-booking">
+        </div>
+
+        <div class="form-group full">
+          <label for="f_dlc">DLCs / Included Editions (Separate with semicolons ;)</label>
+          <input type="text" id="f_dlc" class="form-input" placeholder="e.g., Phantom Liberty DLC;Bonus Pack">
+        </div>
+
+        <div class="form-group">
+          <label for="f_tier">Pricing Mode (7d / 14d / 21d / 28d)</label>
+          <select id="f_tier" class="form-select" onchange="toggleCustomPriceInputs()">
+            <option value="ask">Days Only in Messenger (No Fixed Price)</option>
+            <option value="A">Tier A (Primary: 700/1000/1300/1600 | Sec: 500/800/1100/1400)</option>
+            <option value="B">Tier B (Primary: 400/600/800/1000 | Sec: 300/500/700/900)</option>
+            <option value="custom">Custom 7d/14d/21d/28d Prices</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f_rented">Availability Status</label>
+          <select id="f_rented" class="form-select">
+            <option value="no">Available Now</option>
+            <option value="yes">Rented Out (Show Ribbon)</option>
+          </select>
+        </div>
+
+        <div class="form-group full" id="customPriceGroup" style="display:none;">
+          <label>Custom Prices for 7, 14, 21, 28 Days (Comma-separated in BDT)</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <input type="text" id="f_custP" class="form-input" placeholder="Primary: e.g. 600,900,1200,1500">
+            <input type="text" id="f_custS" class="form-input" placeholder="Secondary: e.g. 400,700,1000,1300">
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label for="f_note">Extra Note in Popup Modal (Optional)</label>
+          <input type="text" id="f_note" class="form-input" placeholder="e.g., Additional 200 BDT applies only to first month.">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+        <button type="button" class="tbtn" onclick="closeGameEditor()">Cancel</button>
+        <button type="submit" class="tbtn primary">💾 Save Game</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- All Covers Drawer Modal -->
+<div id="imgModal" role="dialog" aria-modal="true" aria-label="Manage Game Covers">
+  <div class="img-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;font-size:20px;">🖼️ All Game Covers (Drag &amp; Drop Ready)</h3>
+      <button class="x" onclick="closeImageManager()">✕</button>
+    </div>
+    <p class="small" style="margin:0;">Pick or drop images for any title below:</p>
+    <div class="img-grid-review" id="imgReviewGrid"></div>
+  </div>
+</div>
+
+<!-- Export / Download HTML Modal -->
+<div id="exportModal" role="dialog" aria-modal="true" aria-label="Export Code">
+  <div class="export-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;font-size:20px;">💾 Save &amp; Export for GitHub Pages</h3>
+      <button class="x" onclick="closeExportModal()">✕</button>
+    </div>
+    <p class="small" style="margin:8px 0 0;">All your new games, collection changes, rented-out ribbons, and uploaded cover images are baked permanently into this HTML file (exported in clean visitor mode):</p>
+    <div class="code-box" id="codeBox"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="tbtn" onclick="copyFullHtml()">📋 Copy Full HTML</button>
+      <button class="tbtn success" onclick="downloadHtmlFile()">⬇️ Download index.html</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Sticky Admin Toolbar -->
+<div class="save-toolbar">
+  <div class="save-status">
+    <span class="status-indicator"></span>
+    <span>Admin Mode · <strong id="modifiedCount">0</strong> changes in session</span>
+  </div>
+  <div class="toolbar-btns">
+    <button class="tbtn" onclick="openGameEditor(null, 'G')">＋ Featured Game</button>
+    <button class="tbtn" onclick="openGameEditor(null, 'C')">＋ Collection Game</button>
+    <button class="tbtn" onclick="openExportModal()">📋 View Code</button>
+    <button class="tbtn primary" onclick="downloadHtmlFile()">⬇️ Download index.html</button>
+  </div>
+</div>
+
+<div id="toast">Saved!</div>
+<input type="file" id="filePicker" accept="image/*">
+<input type="file" id="editorFilePicker" accept="image/*">
+
+<script>
+/* =========================================================
+   ADMIN SECURITY CONFIG (Change ADMIN_PIN to your own code)
+   Unlock by:
+   1. Triple-clicking the top "PS4 · PS5 · Bangladesh" badge
+   2. Triple-clicking the footer copyright note
+   3. Pressing Ctrl + Shift + E
+========================================================= */
+const ADMIN_PIN = "4040";
+
+const FB = "https://www.facebook.com/GameRentalService.grs.bd";
+const messengerLink = (game, slot, days, price) => {
+  const hasPrice = price !== undefined && price !== null && price !== "" && price !== "Inbox" && price !== "Ask";
+  const msg = hasPrice
+    ? `Hi, I want to rent "${game}" (${slot} - ${days} Days for ${price} BDT). Please guide me with the booking!`
+    : `Hi, I want to rent "${game}" (${slot} - ${days} Days). Please let me know the price and availability!`;
+  return `https://m.me/GameRentalService.grs.bd?text=${encodeURIComponent(msg)}`;
+};
+
+/* Persisted / Default Images */
+/*__IMG_START__*/
+let IMG = {};
+/*__IMG_END__*/
+
+const defaultImg = "data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="100%" height="100%" fill="#0c121e"/><text x="50%" y="50%" fill="#475569" font-family="sans-serif" font-size="16" text-anchor="middle">No cover yet</text></svg>');
+
+const D = [7,14,21,28];
+const A = {P:[700,1000,1300,1600], S:[500,800,1100,1400]};
+const B = {P:[400,600,800,1000], S:[300,500,700,900]};
+const rent = t => [{t:"Primary", r:D.map((d,i)=>[d+" Days",t.P[i]])},{t:"Secondary", r:D.map((d,i)=>[d+" Days",t.S[i]])}];
+const NOTE1 = "The additional 200 BDT charge applies only to the first month. It will not be added from the second month onward.";
+
+/*__OUT_START__*/
+let OUT_LIST = [];
+/*__OUT_END__*/
+let OUT = new Set(OUT_LIST);
+
+/*__G_START__*/
+let G = [
+ {n:"Phantom Blade Zero", p:"PS5", d:"Release 29-10-2026", from:500, sec:rent(A), note:NOTE1, hot:"New release"},
+ {n:"Call of Duty: Modern Warfare 4", p:"PS4 / PS5", d:"Release 23-10-2026", from:500, sec:rent(A), note:"Pre-booking. Campaign early access: 16-10-2026. "+NOTE1, hot:"Pre-booking"},
+ {n:"The Witcher 3: Wild Hunt Remastered", p:"PS5", d:"Now available", from:300, sec:rent(B), note:""},
+ {n:"Silent Hill: Townfall", p:"PS5", d:"Release 24-09-2026", from:500, sec:rent(A), note:NOTE1},
+ {n:"Control Resonant", p:"PS5", d:"Release 24-09-2026", from:500, sec:rent(A), note:NOTE1},
+ {n:"EA Sports FC 27", p:"PS5", d:"Release 25-09-2026", from:500, sec:rent(A), note:NOTE1},
+ {n:"Grand Theft Auto VI", p:"PS5 · US region", d:"Lifetime permanent slot", from:5500, unit:"lifetime", hot:"Lifetime",
+  sec:[{t:"Ultimate Edition", r:[["Primary slot","7,500"],["Secondary slot","6,500"]]},{t:"Standard Edition", r:[["Primary slot","6,500"],["Secondary slot","5,500"]]}],
+  note:"US region account. Lifetime, permanent, digital access. Secure and reliable service, fast activation, full customer support. Limited slots available."},
+ {n:"Marvel’s Wolverine", p:"PS5", d:"Release 15-09-2026", from:500, sec:rent(A), note:NOTE1},
+ {n:"Onimusha: Way of the Sword", p:"PS5", d:"Release 04-09-2026", from:500, sec:rent(A), note:NOTE1},
+ {n:"The Last of Us Part I", p:"PS5", d:"Featured in the post", ask:true, sec:[], note:"Price was not listed in the post. Inbox the page to ask about this title."}
+];
+/*__G_END__*/
+
+/*__C_START__*/
+let C = `007 First Light|5
+Assassin’s Creed Black Flag Resynced|5
+Astro Bot|5
+Alan Wake 2 Deluxe Edition|5|Night Springs + Lake House DLC
+Avatar: Frontiers of Pandora|5
+Black Myth: Wukong|5
+Bully|45
+Batman: Arkham Collection|45|Arkham Asylum;Arkham City;Arkham Knight
+Call of Duty: Modern Warfare II|45
+Call of Duty: Modern Warfare III|45
+Call of Duty: Black Ops 6|45
+Call of Duty: Black Ops 7|45
+Call of Duty: Black Ops Cold War Cross-Gen|45
+Call of Duty: Vanguard Cross-Gen|45
+Call of Duty: WWII Gold Edition|45
+Cyberpunk 2077|45|Phantom Liberty DLC
+Clair Obscur: Expedition 33|5
+Crimson Desert|5
+DOOM: The Dark Ages|5
+Death Stranding 2: On the Beach|5
+Dying Light: The Beast|5
+EA Sports FC 26|45
+Elden Ring|5
+Final Fantasy VII Rebirth|5
+Gran Turismo 7|45
+God of War Ragnarök|45
+Grand Theft Auto V|45
+GTA Trilogy|45|GTA III;Vice City;San Andreas
+Gears of War: Reloaded|5
+Ghost of Yotei|5|Echoes of Sekigahara DLC
+Hogwarts Legacy Deluxe Edition|45
+Lost Soul Aside|5
+Lies of P|5
+Metro Saga Bundle|45|Metro 2033 Redux;Last Light Redux;Exodus Gold Edition
+Mafia Trilogy|45|Definitive Edition;II;III
+Mafia: The Old Country|5
+Mortal Kombat 1|5|Khaos & Reigns DLC
+Metal Gear Solid Δ: Snake Eater|5
+Nioh 3|5
+A Plague Tale: Innocence|45
+A Plague Tale: Requiem|5
+Prince of Persia: The Lost Crown|45|Mask of Darkness DLC
+Pragmata|5
+Resident Evil 2 Deluxe Edition|45
+Resident Evil 3|45
+Resident Evil 4 Gold Edition|45
+Resonance: A Plague Tale Legacy|5
+Resident Evil Requiem|5
+Red Dead Redemption 2|45
+Stellar Blade|5
+Marvel’s Spider-Man 2|5
+Spider-Man: Miles Morales|45
+Spider-Man Remastered|5
+Silent Hill 2|5
+Tekken 7|45
+Tekken 8|5
+The Elder Scrolls IV: Oblivion Remastered|5
+The Last of Us Part II|5
+WWE 2K26|5
+WWE 2K25|5
+WWE 2K24|45
+Warhammer 40,000: Space Marine 2|5`.split("\n").map(l => {
+  const [n,p,s] = l.split("|");
+  return { n, p: p === "5" ? "PS5" : "PS4 / PS5", s: s ? s.split(";") : [], d: "Collection title", ask: true, sec: [], note: "" };
+});
+/*__C_END__*/
+
+const SUBS = [
+ {p:"PS4", n:"Gold", pr:"4,000", f:["One game at a time"]},
+ {p:"PS4", n:"Premium", pr:"6,000", f:["Two games at a time"]},
+ {p:"PS5", n:"Gold", pr:"9,000", f:["One game at a time"]},
+ {p:"PS5", n:"Premium", pr:"12,000", f:["Two games at a time"]}
+];
+
+/* IndexedDB persistence for local browser session */
+const DB_NAME="grs_covers_v2", STORE="covers", STATE_STORE="app_state";
+function dbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,2);
+    r.onupgradeneeded=()=>{
+      if(!r.result.objectStoreNames.contains(STORE)) r.result.createObjectStore(STORE);
+      if(!r.result.objectStoreNames.contains(STATE_STORE)) r.result.createObjectStore(STATE_STORE);
+    };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+async function dbSet(k,v){try{const db=await dbOpen();db.transaction(STORE,"readwrite").objectStore(STORE).put(v,k);}catch(e){}}
+async function dbDel(k){try{const db=await dbOpen();db.transaction(STORE,"readwrite").objectStore(STORE).delete(k);}catch(e){}}
+async function dbLoadAll(){
+  try{
+    const db=await dbOpen();
+    return await new Promise(res=>{
+      const out={};
+      const q=db.transaction(STORE).objectStore(STORE).openCursor();
+      q.onsuccess=()=>{const c=q.result;if(c){out[c.key]=c.value;c.continue();}else res(out);};
+      q.onerror=()=>res(out);
+    });
+  }catch(e){return {};}
+}
+async function dbSaveCatalog(){
+  try{
+    const db=await dbOpen();
+    const tx=db.transaction(STATE_STORE,"readwrite").objectStore(STATE_STORE);
+    tx.put(G, "G");
+    tx.put(C, "C");
+    tx.put(Array.from(OUT), "OUT");
+  }catch(e){}
+}
+async function dbLoadCatalog(){
+  try{
+    const db=await dbOpen();
+    return await new Promise(res=>{
+      const out={};
+      const q=db.transaction(STATE_STORE).objectStore(STATE_STORE).openCursor();
+      q.onsuccess=()=>{const c=q.result;if(c){out[c.key]=c.value;c.continue();}else res(out);};
+      q.onerror=()=>res(out);
+    });
+  }catch(e){return {};}
+}
+
+let changeCount = 0;
+let activePickGame = null;
+function markChanged(msg) {
+  changeCount++;
+  document.getElementById("modifiedCount").textContent = changeCount;
+  dbSaveCatalog();
+  if (msg) showToast(msg);
+}
+
+/* Secret Admin Unlock Triggers */
+function setEdit(on){
+  document.body.classList.toggle("edit-on",on);
+  try{sessionStorage.setItem("grs_admin_unlocked",on?"1":"0");}catch(e){}
+}
+function lockAdmin(){
+  setEdit(false);
+  showToast("Admin Mode Locked");
+}
+function openPinModal(){
+  if (document.body.classList.contains("edit-on")) {
+    lockAdmin();
+    return;
+  }
+  const m = document.getElementById("pinModal");
+  const inp = document.getElementById("pinInput");
+  inp.value = "";
+  m.classList.add("open");
+  setTimeout(()=>inp.focus(), 50);
+}
+function closePinModal(){
+  document.getElementById("pinModal").classList.remove("open");
+}
+function verifyPin(e){
+  e.preventDefault();
+  const val = document.getElementById("pinInput").value.trim();
+  if (val === ADMIN_PIN) {
+    setEdit(true);
+    closePinModal();
+    showToast("Admin Mode Unlocked!");
+  } else {
+    alert("Incorrect Admin PIN.");
+  }
+}
+
+// Triple-click detectors on Hero Badge & Footer Note + Ctrl+Shift+E shortcut
+function attachSecretTripleClick(el) {
+  if (!el) return;
+  let clicks = 0, timer = null;
+  el.addEventListener("click", () => {
+    clicks++;
+    clearTimeout(timer);
+    if (clicks >= 3) {
+      clicks = 0;
+      openPinModal();
+    } else {
+      timer = setTimeout(() => { clicks = 0; }, 600);
+    }
+  });
+}
+attachSecretTripleClick(document.getElementById("secretBadge"));
+attachSecretTripleClick(document.getElementById("secretFooter"));
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.shiftKey && (e.key === "E" || e.key === "e")) {
+    e.preventDefault();
+    openPinModal();
+  }
+});
+
+const fmt = n => typeof n === "number" ? n.toLocaleString("en-US") : n;
+const grid = document.getElementById("grid");
+const cg = document.getElementById("cgrid");
+
+/* Helper to build quick 7d/14d/21d/28d buttons for any game */
+function buildQuickDaysHtml(g) {
+  if (g.unit === "lifetime") return "";
+  const prices = (g.sec && g.sec[0] && g.sec[0].r && g.sec[0].r.length >= 4)
+    ? g.sec[0].r.map(row => row[1])
+    : [null, null, null, null];
+
+  return `
+    <div class="quick-days" onclick="event.stopPropagation()">
+      ${D.map((d, idx) => {
+        const pr = prices[idx];
+        const titleTxt = pr ? `Book ${d} Days (${pr} BDT)` : `Book ${d} Days in Messenger`;
+        return `<a class="qbtn" href="${messengerLink(g.n, 'Primary', String(d), pr)}" target="_blank" rel="noopener" title="${titleTxt}">${d}d</a>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+/* Helper to build Admin quick-action bar on cards */
+function buildAdminCardBar(gameName, sectionKey) {
+  const safeName = gameName.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  const moveLabel = sectionKey === 'G' ? '→Col' : '→Drop';
+  const moveTitle = sectionKey === 'G' ? 'Move to Full Collection' : 'Move to Latest Drops';
+  return `
+    <div class="admin-card-bar" onclick="event.stopPropagation()">
+      <button class="ac-btn" title="Upload / Change Cover" onclick="triggerPickImage('${safeName}')">📷</button>
+      <button class="ac-btn" title="Edit Title, Prices & Details" onclick="openGameEditor('${safeName}', '${sectionKey}')">✏️</button>
+      <button class="ac-btn" title="${moveTitle}" onclick="moveGameSection('${safeName}', '${sectionKey}')">${moveLabel}</button>
+      <button class="ac-btn warn" title="Toggle Rented Out Ribbon" onclick="toggleRentedOut('${safeName}')">🚫</button>
+      <button class="ac-btn del" title="Delete Game" onclick="deleteGame('${safeName}', '${sectionKey}')">🗑️</button>
+    </div>
+  `;
+}
+
+function renderMainGrid() {
+  grid.innerHTML = "";
+  document.getElementById("heroLatestCount").textContent = G.length;
+  G.forEach((g) => {
+    const c = document.createElement("div");
+    c.className = "card" + (OUT.has(g.n) ? " out" : "");
+    c.tabIndex = 0;
+    c.setAttribute("role", "button");
+    c.setAttribute("aria-label", g.n);
+    c.dataset.game = g.n;
+
+    const tag = g.ask 
+      ? `<div class="tag"><small>Price</small>Ask us</div>` 
+      : `<div class="tag"><small>${g.unit ? "Lifetime from" : "From / 7 days"}</small>${fmt(g.from)} BDT</div>`;
+    const imgUrl = IMG[g.n] || defaultImg;
+
+    c.innerHTML = `
+      ${OUT.has(g.n) ? '<div class="ribbon">Rented out</div>' : ''}
+      ${tag}
+      <div class="cover-box">
+        <img class="cover" src="${imgUrl}" alt="${g.n} cover" loading="lazy">
+        ${buildAdminCardBar(g.n, 'G')}
+      </div>
+      <div class="meta">
+        <h3>${g.n}</h3>
+        <div class="chips">
+          <span class="chip">${g.p}</span>
+          ${g.hot ? `<span class="chip hot">${g.hot}</span>` : ""}
+          ${g.d ? `<span class="chip">${g.d}</span>` : ""}
+        </div>
+        ${ g.s && g.s.length ? `<p class="dlc">${g.s.join(" · ")}</p>` : "" }
+        ${buildQuickDaysHtml(g)}
+        <div class="more">View details &amp; slots →</div>
+      </div>
+    `;
+    c.addEventListener("click", () => openM(g, 'G'));
+    c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openM(g, 'G'); } });
+    
+    setupCardDragDrop(c, g.n);
+    grid.appendChild(c);
+  });
+}
+
+let fp = "", fq = "";
+const ini = n => n.replace(/[^A-Za-z0-9 ]/g,"").split(" ").filter(Boolean).slice(0,3).map(w=>w[0]).join("").toUpperCase();
+const art = n => {
+  let h = 0;
+  for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const a = [210,220,230,240,250,260,270,280][h%8], b = (a+30)%360;
+  return `background:radial-gradient(120% 90% at 20% 0%,hsl(${a} 90% 60%/.5),transparent 60%),linear-gradient(155deg,hsl(${b} 50% 18%),hsl(${a} 60% 10%))`;
+};
+
+function renderC() {
+  cg.innerHTML = "";
+  const list = C.filter(g => (!fp || g.p === fp) && g.n.toLowerCase().includes(fq));
+  document.getElementById("cnt").textContent = `(${list.length} games)`;
+  list.forEach(g => {
+    const c = document.createElement("div");
+    c.className = "card cc" + (OUT.has(g.n) ? " out" : "");
+    const imgUrl = IMG[g.n];
+    const hasCustomPrice = !g.ask && g.from;
+    const tagHtml = hasCustomPrice
+      ? `<div class="tag"><small>From / 7 days</small>${fmt(g.from)} BDT</div>`
+      : "";
+
+    const coverHtml = imgUrl 
+      ? `<div class="cover-box"><img class="cover" src="${imgUrl}" alt="${g.n} cover" loading="lazy">${buildAdminCardBar(g.n, 'C')}</div>` 
+      : `<div class="cover-box"><div class="tile" style="${art(g.n)}"><span class="ini">${ini(g.n)}</span><span class="ttl">${g.n}</span></div>${buildAdminCardBar(g.n, 'C')}</div>`;
+    
+    c.innerHTML = `
+      ${OUT.has(g.n) ? '<div class="ribbon">Rented out</div>' : ''}
+      ${tagHtml}
+      ${coverHtml}
+      <div class="meta">
+        <h3>${g.n}</h3>
+        <div class="chips">
+          <span class="chip">${g.p}</span>
+          ${g.hot ? `<span class="chip hot">${g.hot}</span>` : ""}
+        </div>
+        ${g.s && g.s.length ? `<p class="dlc">${g.s.join(" · ")}</p>` : ""}
+        ${buildQuickDaysHtml(g)}
+        <div class="more">View details &amp; book →</div>
+      </div>`;
+    c.addEventListener("click", () => openM(g, 'C'));
+    setupCardDragDrop(c, g.n);
+    cg.appendChild(c);
+  });
+}
+
+/* Drag and Drop Wiring on Cards */
+function setupCardDragDrop(cardElement, gameName) {
+  const editing=()=>document.body.classList.contains('edit-on');
+  ['dragenter', 'dragover'].forEach(name => {
+    cardElement.addEventListener(name, (e) => {
+      if(!editing()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      cardElement.classList.add('drag-target');
+    });
+  });
+  ['dragleave', 'drop'].forEach(name => {
+    cardElement.addEventListener(name, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      cardElement.classList.remove('drag-target');
+    });
+  });
+  cardElement.addEventListener('drop', (e) => {
+    if(!editing()) return;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleImageFile(files[0], gameName);
+    }
+  });
+}
+
+function handleImageFile(file, gameName) {
+  if (!file.type.startsWith('image/')) {
+    alert("Please drop a valid image file (.jpg, .png, .webp).");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    applyImageToGame(gameName, evt.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyImageToGame(gameName, dataUrl) {
+  IMG[gameName] = dataUrl;
+  dbSet(gameName, dataUrl);
+  renderMainGrid();
+  renderC();
+  markChanged(`Updated cover for ${gameName}`);
+}
+
+function removeCover(gameName){
+  delete IMG[gameName];
+  dbDel(gameName);
+  renderMainGrid();
+  renderC();
+  openImageManager();
+  markChanged("Cover removed");
+}
+
+function triggerPickImage(gameName) {
+  activePickGame = gameName;
+  const picker = document.getElementById("filePicker");
+  picker.value = "";
+  picker.click();
+}
+
+document.getElementById("filePicker").addEventListener("change", (e) => {
+  if (e.target.files && e.target.files[0] && activePickGame) {
+    handleImageFile(e.target.files[0], activePickGame);
+  }
+});
+
+/* Admin Quick Card Actions: Rented Out, Move Section, Delete, Add/Edit */
+function toggleRentedOut(gameName) {
+  if (OUT.has(gameName)) {
+    OUT.delete(gameName);
+    markChanged(`"${gameName}" marked Available`);
+  } else {
+    OUT.add(gameName);
+    markChanged(`"${gameName}" marked Rented Out`);
+  }
+  renderMainGrid();
+  renderC();
+}
+
+function moveGameSection(gameName, fromSection) {
+  if (fromSection === 'G') {
+    const idx = G.findIndex(x => x.n === gameName);
+    if (idx === -1) return;
+    const [g] = G.splice(idx, 1);
+    C.unshift({
+      n: g.n,
+      p: g.p,
+      s: g.s || [],
+      d: g.d || "Collection title",
+      hot: g.hot || "",
+      ask: g.ask ?? (!g.sec || g.sec.length === 0),
+      from: g.from || null,
+      sec: g.sec || [],
+      note: g.note || ""
+    });
+    markChanged(`Moved "${gameName}" to Full Collection`);
+  } else {
+    const idx = C.findIndex(x => x.n === gameName);
+    if (idx === -1) return;
+    const [g] = C.splice(idx, 1);
+    const hasSec = g.sec && g.sec.length > 0;
+    G.unshift({
+      n: g.n,
+      p: g.p,
+      s: g.s || [],
+      d: g.d || "Now available",
+      hot: g.hot || "Featured",
+      from: g.from || (hasSec ? g.sec[1]?.r?.[0]?.[1] || 500 : 500),
+      ask: g.ask ?? !hasSec,
+      sec: hasSec ? g.sec : rent(A),
+      note: g.note || NOTE1
+    });
+    markChanged(`Moved "${gameName}" to Latest Drops`);
+  }
+  renderMainGrid();
+  renderC();
+}
+
+function deleteGame(gameName, sectionKey) {
+  if (!confirm(`Delete "${gameName}" from the catalog?`)) return;
+  if (sectionKey === 'G') {
+    G = G.filter(x => x.n !== gameName);
+  } else {
+    C = C.filter(x => x.n !== gameName);
+  }
+  OUT.delete(gameName);
+  renderMainGrid();
+  renderC();
+  markChanged(`Deleted "${gameName}"`);
+}
+
+/* Add / Edit Game Modal Logic */
+let editingTarget = null; // { originalName, sectionKey }
+let editorTempCover = null;
+
+function toggleCustomPriceInputs() {
+  const v = document.getElementById("f_tier").value;
+  document.getElementById("customPriceGroup").style.display = v === "custom" ? "block" : "none";
+}
+
+function detectTier(g) {
+  if (!g || g.ask || !g.sec || !g.sec.length) return "ask";
+  const p0 = g.sec[0]?.r?.[0]?.[1];
+  const s0 = g.sec[1]?.r?.[0]?.[1];
+  if (p0 === 700 && s0 === 500) return "A";
+  if (p0 === 400 && s0 === 300) return "B";
+  return "custom";
+}
+
+function openGameEditor(gameName, sectionKey = 'G') {
+  const modal = document.getElementById("gameEditorModal");
+  const list = sectionKey === 'G' ? G : C;
+  const existing = gameName ? list.find(x => x.n === gameName) : null;
+
+  editingTarget = existing ? { originalName: existing.n, sectionKey } : null;
+  editorTempCover = existing ? (IMG[existing.n] || null) : null;
+
+  document.getElementById("editorTitle").textContent = existing ? `✏️ Edit "${existing.n}"` : (sectionKey === 'G' ? "➕ Add Game to Latest Drops" : "➕ Add Game to Full Collection");
+  document.getElementById("editorCoverPreview").src = editorTempCover || defaultImg;
+  document.getElementById("f_name").value = existing ? existing.n : "";
+  document.getElementById("f_section").value = sectionKey;
+  document.getElementById("f_plat").value = existing ? existing.p : "PS5";
+  document.getElementById("f_date").value = existing ? (existing.d || "") : (sectionKey === 'G' ? "Now available" : "Collection title");
+  document.getElementById("f_hot").value = existing ? (existing.hot || "") : "";
+  document.getElementById("f_dlc").value = existing && existing.s ? existing.s.join(";") : "";
+  document.getElementById("f_rented").value = (existing && OUT.has(existing.n)) ? "yes" : "no";
+  document.getElementById("f_note").value = existing ? (existing.note || "") : (sectionKey === 'G' ? NOTE1 : "");
+
+  const tier = existing ? detectTier(existing) : (sectionKey === 'G' ? "A" : "ask");
+  document.getElementById("f_tier").value = tier;
+  if (tier === "custom" && existing && existing.sec && existing.sec.length >= 2) {
+    document.getElementById("f_custP").value = existing.sec[0].r.map(x => x[1]).join(",");
+    document.getElementById("f_custS").value = existing.sec[1].r.map(x => x[1]).join(",");
+  } else {
+    document.getElementById("f_custP").value = "700,1000,1300,1600";
+    document.getElementById("f_custS").value = "500,800,1100,1400";
+  }
+  toggleCustomPriceInputs();
+  modal.classList.add("open");
+}
+
+function closeGameEditor() {
+  document.getElementById("gameEditorModal").classList.remove("open");
+}
+
+function clearEditorCover() {
+  editorTempCover = "";
+  document.getElementById("editorCoverPreview").src = defaultImg;
+}
+
+document.getElementById("editorFilePicker").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    editorTempCover = ev.target.result;
+    document.getElementById("editorCoverPreview").src = editorTempCover;
+  };
+  r.readAsDataURL(f);
+});
+
+// Drag & Drop inside Game Editor Cover Box
+const edDrop = document.getElementById("editorDropArea");
+['dragenter','dragover'].forEach(evName => edDrop.addEventListener(evName, e => { e.preventDefault(); e.stopPropagation(); edDrop.style.borderColor = "#10b981"; }));
+['dragleave','drop'].forEach(evName => edDrop.addEventListener(evName, e => { e.preventDefault(); e.stopPropagation(); edDrop.style.borderColor = ""; }));
+edDrop.addEventListener("drop", e => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f && f.type.startsWith("image/")) {
+    const r = new FileReader();
+    r.onload = ev => {
+      editorTempCover = ev.target.result;
+      document.getElementById("editorCoverPreview").src = editorTempCover;
+    };
+    r.readAsDataURL(f);
+  }
+});
+
+function saveGameForm(e) {
+  e.preventDefault();
+  const name = document.getElementById("f_name").value.trim();
+  if (!name) return;
+  const targetSec = document.getElementById("f_section").value;
+  const plat = document.getElementById("f_plat").value;
+  const dateStr = document.getElementById("f_date").value.trim();
+  const hotStr = document.getElementById("f_hot").value.trim();
+  const dlcArr = document.getElementById("f_dlc").value.split(";").map(s => s.trim()).filter(Boolean);
+  const tier = document.getElementById("f_tier").value;
+  const isRented = document.getElementById("f_rented").value === "yes";
+  const noteStr = document.getElementById("f_note").value.trim();
+
+  let secData = [];
+  let askFlag = false;
+  let fromPrice = null;
+
+  if (tier === "ask") {
+    askFlag = true;
+    secData = [];
+  } else if (tier === "A") {
+    secData = rent(A);
+    fromPrice = 500;
+  } else if (tier === "B") {
+    secData = rent(B);
+    fromPrice = 300;
+  } else if (tier === "custom") {
+    const pArr = document.getElementById("f_custP").value.split(",").map(x => parseInt(x.trim(), 10) || 500);
+    const sArr = document.getElementById("f_custS").value.split(",").map(x => parseInt(x.trim(), 10) || 400);
+    while (pArr.length < 4) pArr.push(pArr[pArr.length - 1] || 500);
+    while (sArr.length < 4) sArr.push(sArr[sArr.length - 1] || 400);
+    secData = rent({ P: pArr.slice(0,4), S: sArr.slice(0,4) });
+    fromPrice = Math.min(pArr[0], sArr[0]);
+  }
+
+  const newObj = {
+    n: name,
+    p: plat,
+    d: dateStr || (targetSec === 'G' ? "Now available" : "Collection title"),
+    hot: hotStr || "",
+    s: dlcArr,
+    ask: askFlag,
+    from: fromPrice,
+    sec: secData,
+    note: noteStr
+  };
+
+  // Handle rename / cover transfer
+  if (editingTarget && editingTarget.originalName !== name) {
+    if (IMG[editingTarget.originalName] && editorTempCover === null) {
+      IMG[name] = IMG[editingTarget.originalName];
+      dbSet(name, IMG[name]);
+    }
+    delete IMG[editingTarget.originalName];
+    dbDel(editingTarget.originalName);
+    OUT.delete(editingTarget.originalName);
+  }
+
+  if (editorTempCover) {
+    IMG[name] = editorTempCover;
+    dbSet(name, editorTempCover);
+  } else if (editorTempCover === "") {
+    delete IMG[name];
+    dbDel(name);
+  }
+
+  if (isRented) OUT.add(name);
+  else OUT.delete(name);
+
+  // Remove old entry if editing
+  if (editingTarget) {
+    if (editingTarget.sectionKey === 'G') {
+      const i = G.findIndex(x => x.n === editingTarget.originalName);
+      if (i !== -1) {
+        if (targetSec === 'G') { G[i] = newObj; }
+        else { G.splice(i, 1); C.unshift(newObj); }
+      }
+    } else {
+      const i = C.findIndex(x => x.n === editingTarget.originalName);
+      if (i !== -1) {
+        if (targetSec === 'C') { C[i] = newObj; }
+        else { C.splice(i, 1); G.unshift(newObj); }
+      }
+    }
+  } else {
+    if (targetSec === 'G') G.unshift(newObj);
+    else C.unshift(newObj);
+  }
+
+  renderMainGrid();
+  renderC();
+  closeGameEditor();
+  markChanged(`Saved "${name}"`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* Subscriptions Render */
+const sg = document.getElementById("subgrid");
+SUBS.forEach(s => {
+  const c = document.createElement("div");
+  c.className = "card sub-card";
+  c.innerHTML = `
+    <div class="plat">${s.p} · YEARLY</div>
+    <h3>${s.n}</h3>
+    <div class="price blue-text">${s.pr}<small> BDT / year</small></div>
+    <ul>
+      <li class="hl">${s.f[0]}</li>
+      <li>Access to a huge game library</li>
+      <li>Unlimited game exchanges</li>
+      <li>No return deadline</li>
+      <li>New release access (after 1 month)</li>
+      <li>No registration fee</li>
+    </ul>`;
+  sg.appendChild(c);
+});
+
+document.querySelectorAll(".fbtn").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".fbtn").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  fp = b.dataset.f;
+  renderC();
+});
+document.getElementById("q").oninput = e => {
+  fq = e.target.value.trim().toLowerCase();
+  renderC();
+};
+
+/* Unified Game Modal (Works for both Latest Drops & Full Collection) */
+const M = document.getElementById("modal"), S = document.getElementById("sheet");
+function openM(g, sectionKey = 'G') {
+  const safeName = g.n.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  const hasTables = g.sec && g.sec.length > 0;
+
+  const tbls = hasTables ? g.sec.map(s => `
+    <div class="tbl">
+      <h4>${s.t}</h4>
+      ${s.r.map(r => {
+        const daysNum = r[0].split(" ")[0];
+        const mLink = messengerLink(g.n, s.t, daysNum, r[1]);
+        return `<div class="row"><span>${r[0]}</span><b>${fmt(r[1])} BDT</b><a class="book-row-btn" href="${mLink}" target="_blank" rel="noopener">Book →</a></div>`;
+      }).join("")}
+    </div>
+  `).join("") : `
+    <div class="tbl">
+      <h4>Select Rental Duration (Message for Price &amp; Slot)</h4>
+      ${D.map(d => {
+        const mLink = messengerLink(g.n, 'Standard', String(d), null);
+        return `<div class="row"><span>${d} Days Rental</span><b>Ask in Inbox</b><a class="book-row-btn" href="${mLink}" target="_blank" rel="noopener">Book ${d}d →</a></div>`;
+      }).join("")}
+    </div>
+  `;
+
+  S.innerHTML = `
+    <div class="sh-top">
+      <div class="modal-img-wrap">
+        <img src="${IMG[g.n] || defaultImg}" alt="">
+      </div>
+      <div>
+        <h3>${g.n}</h3>
+        <div class="chips">
+          <span class="chip">${g.p}</span>
+          ${g.d ? `<span class="chip">${g.d}</span>` : ""}
+          ${OUT.has(g.n) ? `<span class="chip" style="border-color:#ef4444;color:#fca5a5;">Rented Out</span>` : ""}
+        </div>
+        ${g.s && g.s.length ? `<p class="dlc" style="margin-top:6px;">Included: ${g.s.join(" · ")}</p>` : ""}
+        <div class="edit-only" style="margin-top:8px;gap:6px;">
+          <button class="tbtn" style="padding:5px 10px;font-size:11px;" onclick="closeM(); openGameEditor('${safeName}', '${sectionKey}')">✏️ Edit Game</button>
+          <button class="tbtn" style="padding:5px 10px;font-size:11px;" onclick="triggerPickImage('${safeName}')">📷 Change Cover</button>
+        </div>
+      </div>
+      <button class="x" aria-label="Close" id="cx">✕</button>
+    </div>
+    <div class="cols">${tbls}</div>
+    <p class="small">${g.note ? g.note + "<br>" : ""}${g.unit ? "" : "📌 We provide 1 or 2 extra days for download (depends on the game)."}</p>
+    <a class="btn hot" href="${messengerLink(g.n, 'Primary', '7', g.from)}" target="_blank" rel="noopener" style="display:block;text-align:center;">💬 Inbox now to book your slot</a>
+  `;
+  M.classList.add("open");
+  document.getElementById("cx").onclick = closeM;
+  document.getElementById("cx").focus();
+}
+function closeM() { M.classList.remove("open"); }
+M.addEventListener("click", e => { if (e.target === M) closeM(); });
+addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeM();
+    closeImageManager();
+    closeExportModal();
+    closeGameEditor();
+    closePinModal();
+  }
+});
+
+/* Image Drawer & Review */
+function openImageManager() {
+  const gridDiv = document.getElementById("imgReviewGrid");
+  gridDiv.innerHTML = "";
+  [...G, ...C.filter(c=>!G.some(x=>x.n===c.n))].forEach(g => {
+    const safeName = g.n.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const item = document.createElement("div");
+    item.className = "img-thumb-item";
+    item.innerHTML = `
+      <img src="${IMG[g.n] || defaultImg}" alt="">
+      <div class="thumb-title" title="${g.n}">${g.n}</div>
+      <button class="upload-sm-btn" onclick="triggerPickImage('${safeName}')">Upload File</button>
+      ${IMG[g.n]?`<button class="rm-btn" onclick="removeCover('${safeName}')">Remove</button>`:''}
+    `;
+    setupCardDragDrop(item, g.n);
+    gridDiv.appendChild(item);
+  });
+  document.getElementById("imgModal").classList.add("open");
+}
+function closeImageManager() {
+  document.getElementById("imgModal").classList.remove("open");
+}
+
+/* Save, Export & 1-Click Download HTML for GitHub Pages */
+function generateExportHtml() {
+  const docClone = document.documentElement.cloneNode(true);
+  
+  // Always export in locked visitor state so public visitors never see Admin UI
+  const bodyClone = docClone.querySelector("body");
+  if (bodyClone) bodyClone.classList.remove("edit-on");
+  docClone.querySelectorAll(".open").forEach(el => el.classList.remove("open"));
+  docClone.querySelectorAll('script[data-bard-client-injected="true"]').forEach(el => el.remove());
+  
+  let htmlString = "<!DOCTYPE html>\n" + docClone.outerHTML;
+
+  // Bake IMG, OUT_LIST, G, and C directly into the exported file
+  htmlString = htmlString.replace(
+    /\/\*__IMG_START__\*\/[\s\S]*?\/\*__IMG_END__\*\//,
+    `/*__IMG_START__*/\nlet IMG = ${JSON.stringify(IMG, null, 2)};\n/*__IMG_END__*/`
+  );
+  htmlString = htmlString.replace(
+    /\/\*__OUT_START__\*\/[\s\S]*?\/\*__OUT_END__\*\//,
+    `/*__OUT_START__*/\nlet OUT_LIST = ${JSON.stringify(Array.from(OUT))};\n/*__OUT_END__*/`
+  );
+  htmlString = htmlString.replace(
+    /\/\*__G_START__\*\/[\s\S]*?\/\*__G_END__\*\//,
+    `/*__G_START__*/\nlet G = ${JSON.stringify(G, null, 2)};\n/*__G_END__*/`
+  );
+  htmlString = htmlString.replace(
+    /\/\*__C_START__\*\/[\s\S]*?\/\*__C_END__\*\//,
+    `/*__C_START__*/\nlet C = ${JSON.stringify(C, null, 2)};\n/*__C_END__*/`
+  );
+  
+  return htmlString;
+}
+
+function openExportModal() {
+  const box = document.getElementById("codeBox");
+  box.textContent = generateExportHtml();
+  document.getElementById("exportModal").classList.add("open");
+}
+function closeExportModal() {
+  document.getElementById("exportModal").classList.remove("open");
+}
+
+function copyFullHtml() {
+  const code = generateExportHtml();
+  navigator.clipboard.writeText(code).then(() => {
+    showToast("Full HTML copied to clipboard!");
+    closeExportModal();
+  });
+}
+
+function downloadHtmlFile() {
+  const code = generateExportHtml();
+  const blob = new Blob([code], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "index.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("Downloaded index.html — Ready for GitHub Pages!");
+}
+
+/* Parallax Hero */
+const st = document.getElementById("stage"), hero = document.getElementById("top");
+hero.addEventListener("pointermove", e => {
+  const r = hero.getBoundingClientRect(), x = (e.clientX - r.left)/r.width - .5, y = (e.clientY - r.top)/r.height - .5;
+  st.style.setProperty("--hy", (x*5).toFixed(2) + "deg");
+  st.style.setProperty("--hx", (-y*4).toFixed(2) + "deg");
+});
+hero.addEventListener("pointerleave", () => {
+  st.style.setProperty("--hy", "0deg");
+  st.style.setProperty("--hx", "0deg");
+});
+
+/* Embers Animation */
+(function(){
+  const cv = document.getElementById("embers"), cx = cv.getContext("2d");
+  let W, H, P = [];
+  const rs = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+  rs();
+  addEventListener("resize", rs);
+  const mk = (init) => ({
+    x: Math.random()*W,
+    y: init ? Math.random()*H : H+10,
+    r: Math.random()*2 + .5,
+    v: Math.random()*.8 + .2,
+    w: Math.random()*Math.PI*2,
+    a: Math.random()*.5 + .2
+  });
+  for (let i = 0; i < 60; i++) P.push(mk(true));
+  if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  (function f(){
+    cx.clearRect(0,0,W,H);
+    P.forEach((p,i)=>{
+      p.y -= p.v; p.w += .02; p.x += Math.sin(p.w)*.4;
+      if (p.y < -10) P[i] = mk(false);
+      cx.beginPath();
+      cx.fillStyle = `rgba(0,100,255,${p.a})`;
+      cx.shadowColor = "#0052ff";
+      cx.shadowBlur = 8;
+      cx.arc(p.x, p.y, p.r, 0, 6.283);
+      cx.fill();
+    });
+    requestAnimationFrame(f);
+  })();
+})();
+
+// Initial Render + Restore Local Session Data
+renderMainGrid();
+renderC();
+Promise.all([dbLoadAll(), dbLoadCatalog()]).then(([savedImgs, savedCat]) => {
+  if (savedImgs) Object.assign(IMG, savedImgs);
+  if (savedCat && savedCat.G) G = savedCat.G;
+  if (savedCat && savedCat.C) C = savedCat.C;
+  if (savedCat && savedCat.OUT) OUT = new Set(savedCat.OUT);
+  renderMainGrid();
+  renderC();
+});
+try {
+  if (sessionStorage.getItem("grs_admin_unlocked") === "1") setEdit(true);
+} catch(e) {}
+</script>
+</body>
+</html>
