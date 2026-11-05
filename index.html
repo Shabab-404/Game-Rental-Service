@@ -589,6 +589,28 @@ body.edit-on .save-toolbar {
   .hero{overflow:hidden}
   .layer.copy{box-sizing:border-box;max-width:100%}
 }
+/* Drag to reorder (admin) */
+.drag-handle{display:none;position:absolute;top:8px;left:8px;z-index:12;height:34px;padding:0 11px;border-radius:9px;background:rgba(15,23,42,.94);border:1px solid rgba(96,165,250,.7);color:#fff;font-size:15px;font-weight:700;align-items:center;justify-content:center;gap:5px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.55)}
+.drag-handle span{font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+body.edit-on .drag-handle{display:flex}
+body.dragging,body.dragging *{cursor:grabbing !important;-webkit-user-select:none;user-select:none}
+.card.drag-src{opacity:.3;outline:2px dashed #60a5fa;outline-offset:-2px}
+.drag-ghost{box-shadow:0 30px 60px rgba(0,0,0,.65),0 0 0 2px #60a5fa !important}
+.card.drop-before::after,.card.drop-after::after{content:"";position:absolute;top:6px;bottom:6px;width:5px;border-radius:5px;background:#34d399;box-shadow:0 0 14px #34d399;z-index:30}
+.card.drop-before::after{left:-8px}
+.card.drop-after::after{right:-8px}
+@media (max-width:640px){.drag-handle{height:30px;padding:0 8px;font-size:13px}.drag-handle span{display:none}}
+/* Admin toolbars on phones: slim, scrollable */
+@media (max-width:640px){
+  .save-toolbar{padding:6px 10px calc(6px + env(safe-area-inset-bottom));gap:6px;flex-direction:column;align-items:stretch;flex-wrap:nowrap}
+  .save-status{font-size:11px;gap:6px;flex-wrap:wrap}
+  .toolbar-btns{flex-wrap:nowrap;overflow-x:auto;gap:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .toolbar-btns::-webkit-scrollbar{display:none}
+  .toolbar-btns .tbtn{flex:0 0 auto;white-space:nowrap;padding:7px 11px;font-size:12px}
+  .pub-status{margin-left:0;font-size:10.5px;padding:2px 8px}
+  body.edit-on #sfxToggle{bottom:104px}
+  body.edit-on{padding-bottom:110px}
+}
 /* Live publish status */
 .pub-status{display:inline-block;margin-left:10px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;border:1px solid var(--line);color:var(--mute);background:rgba(15,23,42,.7)}
 .pub-status.busy{color:#fbbf24;border-color:#fbbf2466}
@@ -615,7 +637,7 @@ body.edit-on #sfxToggle{bottom:84px}
 <div class="uploader-banner">
   <div style="display:flex;align-items:center;gap:10px;">
     <span class="badge-pill">Admin Unlocked</span>
-    <span>Drag &amp; drop covers onto any card, edit titles/prices, add new games, or export for GitHub Pages!</span>
+    <span>Drag covers onto any card, hold ⠿ Move to reorder games, edit prices, add games. Changes publish automatically once Live setup is done.</span>
   </div>
   <div class="banner-actions">
     <button class="banner-btn green" onclick="openGameEditor(null, 'G')">＋ Add to Latest Drops</button>
@@ -670,6 +692,7 @@ body.edit-on #sfxToggle{bottom:84px}
       <p class="lead">Click any title to view full slot pricing or tap a day button to book directly in Messenger.</p>
     </div>
     <button class="tbtn success edit-only" onclick="openGameEditor(null, 'G')">＋ Add Featured Game</button>
+    <button class="tbtn edit-only" onclick="resetOrder('G')" title="Forget manual order, sort newest → oldest (GTA VI first)">↕ Auto-sort by date</button>
   </div>
   
   <div class="drop-instructions">
@@ -696,6 +719,7 @@ body.edit-on #sfxToggle{bottom:84px}
       <p class="lead">More PS4 &amp; PS5 titles. Pick your rental days (7d / 14d / 21d / 28d) or click any game to book. <span id="cnt" style="color:var(--blue2);font-weight:600;">(62 games)</span></p>
     </div>
     <button class="tbtn success edit-only" onclick="openGameEditor(null, 'C')">＋ Add Collection Game</button>
+    <button class="tbtn edit-only" onclick="resetOrder('C')" title="Forget manual order, sort newest → oldest">↕ Auto-sort by date</button>
   </div>
   <div class="tools">
     <input class="search" id="q" type="search" placeholder="Search games…" aria-label="Search games">
@@ -1296,6 +1320,9 @@ body.edit-on #sfxToggle{bottom:84px}
 /*__BUILD_START__*/
 let BUILD_ID = "0";
 /*__BUILD_END__*/
+/*__ORD_START__*/
+let MANUAL = {"G":false,"C":false};
+/*__ORD_END__*/
 const ADMIN_PIN = "2415";
 
 const FB = "https://www.facebook.com/GameRentalService.grs.bd";
@@ -2560,6 +2587,7 @@ async function dbSaveCatalog(){
     tx.put(G, "G");
     tx.put(C, "C");
     tx.put(Array.from(OUT), "OUT");
+    tx.put(MANUAL, "MANUAL");
   }catch(e){}
 }
 async function dbLoadCatalog(){
@@ -2648,7 +2676,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 /* Sort: pinned (GTA VI) first, then newest release -> oldest. Games with no date go to the top. */
-const sortGames = list => list.map((g,i)=>[g,i]).sort((a,b)=>{
+const sortGames = (list, key) => MANUAL[key] ? list.slice() : list.map((g,i)=>[g,i]).sort((a,b)=>{
   if (!!b[0].pin !== !!a[0].pin) return b[0].pin ? 1 : -1;
   const da = a[0].rd || "9999-12-31", db = b[0].rd || "9999-12-31";
   return da < db ? 1 : da > db ? -1 : a[1]-b[1];
@@ -2681,6 +2709,7 @@ function buildAdminCardBar(gameName, sectionKey) {
   const moveLabel = sectionKey === 'G' ? '→Col' : '→Drop';
   const moveTitle = sectionKey === 'G' ? 'Move to Full Collection' : 'Move to Latest Drops';
   return `
+    <div class="drag-handle" data-sec="${sectionKey}" data-game="${encodeURIComponent(gameName)}" title="Hold &amp; drag to move this game" aria-label="Drag to reorder">⠿ <span>Move</span></div>
     <div class="admin-card-bar" onclick="event.stopPropagation()">
       <button class="ac-btn" title="Upload / Change Cover" onclick="triggerPickImage('${safeName}')">📷</button>
       <button class="ac-btn" title="Edit Title, Prices & Details" onclick="openGameEditor('${safeName}', '${sectionKey}')">✏️</button>
@@ -2694,7 +2723,7 @@ function buildAdminCardBar(gameName, sectionKey) {
 function renderMainGrid() {
   grid.innerHTML = "";
   document.getElementById("heroLatestCount").textContent = G.length;
-  sortGames(G).forEach((g) => {
+  sortGames(G, "G").forEach((g) => {
     const c = document.createElement("div");
     c.className = "card" + (OUT.has(g.n) ? " out" : "");
     c.tabIndex = 0;
@@ -2745,7 +2774,7 @@ const art = n => {
 
 function renderC() {
   cg.innerHTML = "";
-  const list = sortGames(C).filter(g => (!fp || g.p === fp) && g.n.toLowerCase().includes(fq));
+  const list = sortGames(C, "C").filter(g => (!fp || g.p === fp) && g.n.toLowerCase().includes(fq));
   document.getElementById("cnt").textContent = `(${list.length} games)`;
   list.forEach(g => {
     const c = document.createElement("div");
@@ -3258,6 +3287,10 @@ function generateExportHtml(buildId) {
     () => `/*__BUILD_START__*/\nlet BUILD_ID = "${buildId || BUILD_ID}";\n/*__BUILD_END__*/`
   );
   htmlString = htmlString.replace(
+    /\/\*__ORD_START__\*\/[\s\S]*?\/\*__ORD_END__\*\//,
+    () => `/*__ORD_START__*/\nlet MANUAL = ${JSON.stringify(MANUAL)};\n/*__ORD_END__*/`
+  );
+  htmlString = htmlString.replace(
     /\/\*__OUT_START__\*\/[\s\S]*?\/\*__OUT_END__\*\//,
     () => `/*__OUT_START__*/\nlet OUT_LIST = ${JSON.stringify(Array.from(OUT))};\n/*__OUT_END__*/`
   );
@@ -3571,6 +3604,83 @@ window.addEventListener("beforeunload", e => {
   if (document.body.classList.contains("edit-on") && pending && ghReady(ghCfg()) && (publishing || pubTimer)) { e.preventDefault(); e.returnValue = ""; }
 });
 
+
+/* =========================================================
+   DRAG TO REORDER (admin mode) - works with mouse and touch.
+   Hold the ⠿ Move handle on a card, drag it before/after any other card.
+========================================================= */
+function resetOrder(key){
+  MANUAL[key] = false;
+  renderMainGrid(); renderC();
+  markChanged(key === "G" ? "Featured games sorted by date" : "Collection sorted by date");
+}
+(function(){
+  let drag = null, scrollTimer = null, lastDrag = 0;
+  const gridOf = sec => sec === "G" ? grid : cg;
+  const clearMarks = () => document.querySelectorAll(".drop-before,.drop-after").forEach(el => el.classList.remove("drop-before","drop-after"));
+  function updateTarget(){
+    if (!drag) return;
+    drag.ghost.style.left = (drag.x - drag.dx) + "px";
+    drag.ghost.style.top = (drag.y - drag.dy) + "px";
+    const el = document.elementFromPoint(drag.x, drag.y);
+    const card = el && el.closest(".card");
+    clearMarks();
+    drag.target = null;
+    if (card && card !== drag.card && gridOf(drag.sec).contains(card)) {
+      const r = card.getBoundingClientRect();
+      drag.after = drag.x > r.left + r.width / 2;
+      card.classList.add(drag.after ? "drop-after" : "drop-before");
+      drag.target = card;
+    }
+  }
+  function finish(cancel){
+    if (!drag) return;
+    clearInterval(scrollTimer);
+    const d = drag; drag = null; lastDrag = Date.now();
+    d.ghost.remove(); d.card.classList.remove("drag-src"); document.body.classList.remove("dragging"); clearMarks();
+    if (cancel || !d.target) return;
+    const targetName = d.target.dataset.game || (d.target.querySelector(".drag-handle") ? decodeURIComponent(d.target.querySelector(".drag-handle").dataset.game) : null);
+    if (!targetName || targetName === d.name) return;
+    const arr = d.sec === "G" ? G : C;
+    if (!MANUAL[d.sec]) { const sorted = sortGames(arr, d.sec); arr.splice(0, arr.length, ...sorted); MANUAL[d.sec] = true; }
+    const from = arr.findIndex(x => x.n === d.name); if (from < 0) return;
+    const [item] = arr.splice(from, 1);
+    let to = arr.findIndex(x => x.n === targetName); if (to < 0) { arr.splice(from, 0, item); return; }
+    if (d.after) to++;
+    arr.splice(to, 0, item);
+    renderMainGrid(); renderC();
+    SFX.play("open");
+    markChanged("Order updated");
+  }
+  document.addEventListener("pointerdown", e => {
+    const h = e.target.closest(".drag-handle");
+    if (!h || !document.body.classList.contains("edit-on") || drag) return;
+    e.preventDefault(); e.stopPropagation();
+    const card = h.closest(".card"), r = card.getBoundingClientRect();
+    const ghost = card.cloneNode(true);
+    ghost.classList.add("drag-ghost");
+    ghost.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;pointer-events:none;z-index:300;opacity:.92;transform:scale(.97) rotate(2deg);`;
+    document.body.appendChild(ghost);
+    card.classList.add("drag-src"); document.body.classList.add("dragging");
+    drag = { sec: h.dataset.sec, name: decodeURIComponent(h.dataset.game), card, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, x: e.clientX, y: e.clientY, target: null, after: false };
+    try { h.setPointerCapture(e.pointerId); } catch(err) {}
+    scrollTimer = setInterval(() => {            // auto-scroll near screen edges
+      if (!drag) return;
+      if (drag.y < 90) scrollBy(0, -18); else if (drag.y > innerHeight - 90) scrollBy(0, 18);
+      updateTarget();
+    }, 16);
+    SFX.play("click"); updateTarget();
+  }, true);
+  document.addEventListener("pointermove", e => { if (!drag) return; e.preventDefault(); drag.x = e.clientX; drag.y = e.clientY; updateTarget(); }, { passive:false });
+  document.addEventListener("pointerup", () => finish(false), true);
+  document.addEventListener("pointercancel", () => finish(true), true);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && drag) finish(true); });
+  // a drag must never count as a click that opens the game window
+  document.addEventListener("click", e => {
+    if (e.target.closest(".drag-handle") || Date.now() - lastDrag < 400) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+})();
+
 // Initial Render + Restore Local Session Data
 renderMainGrid();
 renderC();
@@ -3583,6 +3693,7 @@ Promise.all([dbLoadAll(), dbLoadCatalog()]).then(([savedImgs, savedCat]) => {
     if (savedCat && savedCat.G) G = savedCat.G;
     if (savedCat && savedCat.C) C = savedCat.C;
     if (savedCat && savedCat.OUT) OUT = new Set(savedCat.OUT);
+    if (savedCat && savedCat.MANUAL) MANUAL = savedCat.MANUAL;
   }
   renderMainGrid();
   renderC();
