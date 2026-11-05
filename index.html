@@ -425,10 +425,10 @@ footer h2{font-size:clamp(26px,4vw,38px)}
 .small{font-size:13px;color:var(--mute);line-height:1.6;margin:10px 0 16px}
 
 /* Game Editor Modal (Add / Edit Game) */
-#gameEditorModal, #pinModal {
+#gameEditorModal, #pinModal, #ghModal {
   position:fixed;inset:0;z-index:85;display:none;place-items:center;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);padding:20px;
 }
-#gameEditorModal.open, #pinModal.open {display:grid}
+#gameEditorModal.open, #pinModal.open, #ghModal.open {display:grid}
 .editor-sheet {
   width:100%;max-width:640px;max-height:92vh;overflow-y:auto;background:var(--panel);border:1px solid #3b82f688;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.65);
 }
@@ -589,6 +589,16 @@ body.edit-on .save-toolbar {
   .hero{overflow:hidden}
   .layer.copy{box-sizing:border-box;max-width:100%}
 }
+/* Live publish status */
+.pub-status{display:inline-block;margin-left:10px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;border:1px solid var(--line);color:var(--mute);background:rgba(15,23,42,.7)}
+.pub-status.busy{color:#fbbf24;border-color:#fbbf2466}
+.pub-status.ok{color:#34d399;border-color:#34d39966}
+.pub-status.err{color:#f87171;border-color:#f8717166}
+.pub-status.setup{color:#60a5fa;border-color:#60a5fa66;cursor:pointer}
+#ghModal .form-input{width:100%;margin-bottom:10px}
+#ghModal label{display:block;text-align:left;font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+#ghModal ol{text-align:left;font-size:12.5px;color:var(--mute);margin:0 0 14px;padding-left:18px;line-height:1.55}
+#ghMsg{font-size:13px;min-height:18px;margin:0 0 10px}
 /* Sound toggle */
 #sfxToggle{position:fixed;left:16px;bottom:16px;z-index:90;width:46px;height:46px;border-radius:50%;border:1px solid rgba(96,165,250,.45);background:rgba(15,23,42,.88);color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.5),0 0 14px rgba(37,99,235,.35);transition:transform .15s,box-shadow .15s}
 #sfxToggle:hover{transform:scale(1.08)}
@@ -726,6 +736,36 @@ body.edit-on #sfxToggle{bottom:84px}
       <div style="display:flex;gap:8px;justify-content:center;">
         <button type="button" class="tbtn" onclick="closePinModal()">Cancel</button>
         <button type="submit" class="tbtn primary">Unlock Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Live Publish (GitHub) Setup Modal -->
+<div id="ghModal" role="dialog" aria-modal="true" aria-label="Live publishing setup">
+  <div class="editor-sheet" style="max-width:460px;">
+    <h3 style="margin:0 0 8px;font-size:20px;">🚀 Live publishing (GitHub)</h3>
+    <p class="small" style="margin:0 0 12px;">Once set up on this device, every change you make publishes itself to your live site. Only a device with your token can publish.</p>
+    <ol>
+      <li>Open <b>github.com/settings/personal-access-tokens/new</b></li>
+      <li>Repository access → <b>Only select repositories</b> → pick your site repo</li>
+      <li>Permissions → Repository → <b>Contents: Read and write</b></li>
+      <li>Generate the token and paste it below</li>
+    </ol>
+    <form onsubmit="saveGhForm(event)" autocomplete="off">
+      <label for="gh_repo">Repository (owner/name)</label>
+      <input type="text" id="gh_repo" class="form-input" placeholder="yourname/your-repo" autocapitalize="off" autocorrect="off">
+      <label for="gh_branch">Branch</label>
+      <input type="text" id="gh_branch" class="form-input" placeholder="main" autocapitalize="off">
+      <label for="gh_path">File path</label>
+      <input type="text" id="gh_path" class="form-input" placeholder="index.html" autocapitalize="off">
+      <label for="gh_token">Access token</label>
+      <input type="password" id="gh_token" class="form-input" placeholder="github_pat_…" autocomplete="off">
+      <p id="ghMsg"></p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+        <button type="button" class="tbtn danger" onclick="clearGhConfig()">Remove from this device</button>
+        <button type="button" class="tbtn" onclick="closeGhModal()">Close</button>
+        <button type="submit" class="tbtn primary">Save &amp; test</button>
       </div>
     </form>
   </div>
@@ -1228,11 +1268,13 @@ body.edit-on #sfxToggle{bottom:84px}
 <div class="save-toolbar">
   <div class="save-status">
     <span class="status-indicator"></span>
-    <span>Admin Mode · <strong id="modifiedCount">0</strong> changes in session</span>
+    <span>Admin Mode · <strong id="modifiedCount">0</strong> changes in session</span><span id="pubStatus" class="pub-status" onclick="openGhModal()">Live: not set up</span>
   </div>
   <div class="toolbar-btns">
     <button class="tbtn" onclick="openGameEditor(null, 'G')">＋ Featured Game</button>
     <button class="tbtn" onclick="openGameEditor(null, 'C')">＋ Collection Game</button>
+    <button class="tbtn" onclick="openGhModal()">⚙️ Live setup</button>
+    <button class="tbtn success" onclick="publishNow(true)">🚀 Publish now</button>
     <button class="tbtn" onclick="openExportModal()">📋 View Code</button>
     <button class="tbtn primary" onclick="downloadHtmlFile()">⬇️ Download index.html</button>
   </div>
@@ -1251,6 +1293,9 @@ body.edit-on #sfxToggle{bottom:84px}
    2. Triple-clicking the footer copyright note
    3. Pressing Ctrl + Shift + E
 ========================================================= */
+/*__BUILD_START__*/
+let BUILD_ID = "0";
+/*__BUILD_END__*/
 const ADMIN_PIN = "2415";
 
 const FB = "https://www.facebook.com/GameRentalService.grs.bd";
@@ -2534,7 +2579,9 @@ let activePickGame = null;
 function markChanged(msg) {
   changeCount++;
   document.getElementById("modifiedCount").textContent = changeCount;
+  try { localStorage.setItem("grs_pending", "1"); } catch(e) {}
   dbSaveCatalog();
+  if (typeof schedulePublish === "function") schedulePublish();
   if (msg) showToast(msg);
 }
 
@@ -3182,7 +3229,7 @@ function closeImageManager() {
 }
 
 /* Save, Export & 1-Click Download HTML for GitHub Pages */
-function generateExportHtml() {
+function generateExportHtml(buildId) {
   const docClone = document.documentElement.cloneNode(true);
   
   // Always export in locked visitor state so public visitors never see Admin UI
@@ -3196,7 +3243,8 @@ function generateExportHtml() {
   const toastClone = docClone.querySelector("#toast"); if (toastClone) { toastClone.textContent = ""; toastClone.classList.remove("show"); }
   const mc = docClone.querySelector("#modifiedCount"); if (mc) mc.textContent = "0";
   const cvClone = docClone.querySelector("#embers"); if (cvClone) { cvClone.removeAttribute("width"); cvClone.removeAttribute("height"); }
-  docClone.querySelectorAll("input[type=file]").forEach(el => el.removeAttribute("value"));
+  docClone.querySelectorAll("input[type=file], #ghModal input").forEach(el => el.removeAttribute("value"));
+  const ps = docClone.querySelector("#pubStatus"); if (ps) { ps.textContent = "Live: not set up"; ps.className = "pub-status"; }
   
   let htmlString = "<!DOCTYPE html>\n" + docClone.outerHTML;
 
@@ -3204,6 +3252,10 @@ function generateExportHtml() {
   htmlString = htmlString.replace(
     /\/\*__IMG_START__\*\/[\s\S]*?\/\*__IMG_END__\*\//,
     () => `/*__IMG_START__*/\nlet IMG = ${JSON.stringify(IMG, null, 2)};\n/*__IMG_END__*/`
+  );
+  htmlString = htmlString.replace(
+    /\/\*__BUILD_START__\*\/[\s\S]*?\/\*__BUILD_END__\*\//,
+    () => `/*__BUILD_START__*/\nlet BUILD_ID = "${buildId || BUILD_ID}";\n/*__BUILD_END__*/`
   );
   htmlString = htmlString.replace(
     /\/\*__OUT_START__\*\/[\s\S]*?\/\*__OUT_END__\*\//,
@@ -3384,16 +3436,157 @@ const SFX = (function(){
   document.addEventListener("input", e => { if (e.target.id === "q") SFX.play("hover"); }, { passive:true });
 })();
 
+
+/* =========================================================
+   LIVE PUBLISH TO GITHUB
+   Admin edits are committed to your repo automatically a few seconds
+   after your last change. GitHub Pages then updates the live site.
+   Optional: hard-code your repo below so it is pre-filled on every device.
+========================================================= */
+const GH_DEFAULT = { repo: "Shabab-404/Game-Rental-Service", branch: "main", path: "index.html" };
+const AUTO_PUBLISH_DELAY = 3000;
+function ghCfg(){
+  let st = {}; try { st = JSON.parse(localStorage.getItem("grs_gh") || "{}"); } catch(e) {}
+  return { repo: st.repo || GH_DEFAULT.repo, branch: st.branch || GH_DEFAULT.branch, path: st.path || GH_DEFAULT.path, token: st.token || "" };
+}
+const ghReady = c => !!(c.repo && c.token && /^[\w.-]+\/[\w.-]+$/.test(c.repo));
+function setPub(kind, text){
+  const el = document.getElementById("pubStatus"); if (!el) return;
+  el.className = "pub-status " + kind; el.textContent = text;
+}
+function refreshPubStatus(){
+  const c = ghCfg(); let pending = false; try { pending = localStorage.getItem("grs_pending") === "1"; } catch(e) {}
+  if (!ghReady(c)) setPub("setup", "Live: not set up — tap to set up");
+  else setPub(pending ? "busy" : "ok", pending ? "Unpublished changes" : "Live ✓ up to date");
+}
+function openGhModal(){
+  const c = ghCfg();
+  document.getElementById("gh_repo").value = c.repo;
+  document.getElementById("gh_branch").value = c.branch;
+  document.getElementById("gh_path").value = c.path;
+  document.getElementById("gh_token").value = c.token;
+  document.getElementById("ghMsg").textContent = "";
+  document.getElementById("ghModal").classList.add("open");
+}
+function closeGhModal(){ document.getElementById("ghModal").classList.remove("open"); }
+function clearGhConfig(){
+  try { localStorage.removeItem("grs_gh"); } catch(e) {}
+  document.getElementById("gh_token").value = "";
+  refreshPubStatus(); showToast("Live publishing removed from this device");
+}
+const ghHeaders = t => ({ Authorization: "Bearer " + t, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
+const ghUrl = c => `https://api.github.com/repos/${c.repo}/contents/${c.path.split("/").map(encodeURIComponent).join("/")}`;
+async function ghErr(r){
+  let m = ""; try { m = (await r.json()).message || ""; } catch(e) {}
+  if (r.status === 401) return "Token not accepted (wrong or expired).";
+  if (r.status === 403) return "Token has no permission. It needs Contents: Read and write. " + m;
+  if (r.status === 404) return "Repo, branch or file not found (or the token cannot see this repo).";
+  if (r.status === 409 || r.status === 422) return "Conflict while saving. Try again. " + m;
+  return "GitHub error " + r.status + ". " + m;
+}
+async function saveGhForm(e){
+  e.preventDefault();
+  const msg = document.getElementById("ghMsg");
+  const c = {
+    repo: document.getElementById("gh_repo").value.trim().replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/, "").replace(/\/$/, ""),
+    branch: document.getElementById("gh_branch").value.trim() || "main",
+    path: document.getElementById("gh_path").value.trim().replace(/^\//, "") || "index.html",
+    token: document.getElementById("gh_token").value.trim()
+  };
+  if (!ghReady(c)) { msg.style.color = "#f87171"; msg.textContent = "Enter the repo as owner/name and paste your token."; SFX.play("error"); return; }
+  msg.style.color = "#fbbf24"; msg.textContent = "Testing connection…";
+  try {
+    const r = await fetch(`https://api.github.com/repos/${c.repo}`, { headers: ghHeaders(c.token), cache: "no-store" });
+    if (!r.ok) throw new Error(await ghErr(r));
+    const info = await r.json();
+    if (info.permissions && info.permissions.push === false) throw new Error("This token can read the repo but cannot write to it.");
+    const f = await fetch(`${ghUrl(c)}?ref=${encodeURIComponent(c.branch)}`, { headers: ghHeaders(c.token), cache: "no-store" });
+    if (!f.ok && f.status !== 404) throw new Error(await ghErr(f));
+    try { localStorage.setItem("grs_gh", JSON.stringify(c)); } catch(err) {}
+    msg.style.color = "#34d399";
+    msg.textContent = f.ok ? "Connected ✓ Your edits will now publish automatically." : "Connected ✓ (file not in repo yet; it will be created on first publish).";
+    SFX.play("unlock"); refreshPubStatus();
+  } catch(err) { msg.style.color = "#f87171"; msg.textContent = err.message; SFX.play("error"); }
+}
+
+let pubTimer = null, publishing = false, publishAgain = false;
+function schedulePublish(delay){
+  const c = ghCfg(); refreshPubStatus();
+  if (!ghReady(c)) return;
+  clearTimeout(pubTimer);
+  setPub("busy", "Publishing in a moment…");
+  pubTimer = setTimeout(() => publishNow(false), delay === undefined ? AUTO_PUBLISH_DELAY : delay);
+}
+async function dbClearAll(){
+  try {
+    const db = await dbOpen();
+    db.transaction(STORE, "readwrite").objectStore(STORE).clear();
+    db.transaction(STATE_STORE, "readwrite").objectStore(STATE_STORE).clear();
+  } catch(e) {}
+}
+async function publishNow(manual){
+  clearTimeout(pubTimer);
+  const c = ghCfg();
+  if (!ghReady(c)) { setPub("setup", "Live: not set up — tap to set up"); if (manual) openGhModal(); return; }
+  if (publishing) { publishAgain = true; return; }
+  publishing = true; setPub("busy", "Publishing…");
+  try {
+    const h = ghHeaders(c.token), api = ghUrl(c), ref = "?ref=" + encodeURIComponent(c.branch);
+    // 1) current file on GitHub (sha + build id) so we never overwrite a newer version by accident
+    let sha;
+    const meta = await fetch(api + ref, { headers: h, cache: "no-store" });
+    if (meta.ok) {
+      sha = (await meta.json()).sha;
+      const raw = await fetch(api + ref, { headers: { ...h, Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
+      if (raw.ok) {
+        const live = (await raw.text()).match(/let BUILD_ID = "(\d+)"/);
+        if (live && live[1] !== BUILD_ID) {
+          const ok = confirm("The live site was changed from another device after this page was loaded.\n\nOK = overwrite it with THIS page's version.\nCancel = keep the live version (then reload this page to get it).");
+          if (!ok) { setPub("err", "Not published — reload to get the newest version"); return; }
+        }
+      }
+    } else if (meta.status !== 404) throw new Error(await ghErr(meta));
+    // 2) build the clean file and commit it
+    const newId = String(Date.now());
+    const bytes = new TextEncoder().encode(generateExportHtml(newId));
+    let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    const put = await fetch(api, { method: "PUT", headers: { ...h, "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Update site from admin panel", content: btoa(bin), branch: c.branch, ...(sha ? { sha } : {}) }) });
+    if (!put.ok) throw new Error(await ghErr(put));
+    BUILD_ID = newId;
+    try { localStorage.setItem("grs_pending", "0"); } catch(e) {}
+    dbClearAll();
+    setPub("ok", "Live ✓ published — visitors see it in 1–2 min");
+    SFX.play("toast"); showToast("Published to GitHub ✓");
+  } catch(err) {
+    setPub("err", "Publish failed: " + err.message);
+    if (manual) alert("Publish failed: " + err.message);
+  } finally {
+    publishing = false;
+    if (publishAgain) { publishAgain = false; schedulePublish(800); }
+  }
+}
+window.addEventListener("beforeunload", e => {
+  let pending = false; try { pending = localStorage.getItem("grs_pending") === "1"; } catch(err) {}
+  if (document.body.classList.contains("edit-on") && pending && ghReady(ghCfg()) && (publishing || pubTimer)) { e.preventDefault(); e.returnValue = ""; }
+});
+
 // Initial Render + Restore Local Session Data
 renderMainGrid();
 renderC();
 Promise.all([dbLoadAll(), dbLoadCatalog()]).then(([savedImgs, savedCat]) => {
-  if (savedImgs) Object.assign(IMG, savedImgs);
-  if (savedCat && savedCat.G) G = savedCat.G;
-  if (savedCat && savedCat.C) C = savedCat.C;
-  if (savedCat && savedCat.OUT) OUT = new Set(savedCat.OUT);
+  let pending = false;
+  try { pending = localStorage.getItem("grs_pending") === "1"; } catch(e) {}
+  // Published site is the source of truth. Only restore this device's local copy while it has unpublished edits.
+  if (pending) {
+    if (savedImgs) Object.assign(IMG, savedImgs);
+    if (savedCat && savedCat.G) G = savedCat.G;
+    if (savedCat && savedCat.C) C = savedCat.C;
+    if (savedCat && savedCat.OUT) OUT = new Set(savedCat.OUT);
+  }
   renderMainGrid();
   renderC();
+  refreshPubStatus();
 });
 try {
   if (sessionStorage.getItem("grs_admin_unlocked") === "1") setEdit(true);
